@@ -150,9 +150,9 @@ function freezeGame(healthUpdater, monkey) {
    see https://github.com/craftyjs/Crafty/issues/882
 */
 function spawnMonkey(levelWidth) {
-    var monkey = Crafty.e('2D, DOM, Twoway, Gravity, Collision, sprite_monkey')
+    var monkey = Crafty.e('2D, DOM, Twoway, Gravity, Collision, SolidHitBox')
       .attr({x: 0, y: H-FH-100, w: 50, h: 50, z: 9})
-      .twoway(5,19)
+      .twoway(5,17)
       .gravity('Floor')
       .gravityConst(1)
       .collision()
@@ -167,10 +167,8 @@ function spawnMonkey(levelWidth) {
         banana.destroy();
         bananaCount--;
       }).bind("CheckLanding", function(ground) {
-        // disallow landing if monkey's feet are not above platform
-        // this prevents snapping to platforms that would not have been reached otherwise
-        if (this._y + this._h > ground._y + ground._h)
-          this.canLand = false;
+        if (this._y + this._h > ground._y + this._vy) // forbid landing, if player's feet are not above ground
+            this.canLand = false;
       });
 
     Crafty.viewport.follow(monkey, 0, 0);
@@ -189,7 +187,7 @@ function startHealthUpdater() {
         }
         $('#health').html(Math.round(health));
     };
-    Crafty.bind('EnterFrame', healthUpdater);
+    //Crafty.bind('EnterFrame', healthUpdater);
     $('#health-bar').show();
     return healthUpdater;
 }
@@ -236,14 +234,14 @@ function plantTree(treeSpec, x) {
 function placeGiraffe(x) {
 	var s = sprites["giraffe"];
 	var size = getEntitySize(s, 200);
-	var giraffe = Crafty.e('2D, DOM, giraffe, sprite_giraffe')
+	var giraffe = Crafty.e('2D, DOM, giraffe')
 	  .attr({x: x-size.w/2, y: H-size.h-FH, z: 7, 
 	         w: size.w, h: size.h});
 	// hit boxes need some height to prevent tunneling
-    Crafty.e('Floor, 2D')
-      .attr({x: x, y: H-FH-size.h*.425, w: size.h*.25, h: 20});
-    Crafty.e('Floor, 2D')
-      .attr({x: x-size.h*.21, y: H-FH-size.h*0.89, w: size.h*0.15, h: 20});
+    Crafty.e('Floor, 2D, Canvas, SolidHitBox')
+      .attr({x: x, y: H-FH-size.h*.425, w: size.h*.25, h: 1});
+    Crafty.e('Floor, 2D, Canvas, SolidHitBox')
+      .attr({x: x-size.h*.21, y: H-FH-size.h*0.89, w: size.h*0.15, h: 1});
 	return giraffe;
 }
 
